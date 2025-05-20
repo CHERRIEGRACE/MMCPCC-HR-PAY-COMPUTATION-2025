@@ -1,10 +1,163 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>MMCPCC HR Pay Calculator</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Employee Pay Calculator - Probationary & Regular</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f4f4f4;
+    padding: 2rem;
+  }
+  .container {
+    max-width: 600px;
+    margin: auto;
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 0 10px #ccc;
+  }
+  label {
+    display: block;
+    margin-top: 1rem;
+    font-weight: bold;
+  }
+  input[type=number], select {
+    width: 100%;
+    padding: 0.5rem;
+    margin-top: 0.3rem;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+  }
+  button {
+    margin-top: 1.5rem;
+    width: 100%;
+    padding: 0.7rem;
+    background: #007bff;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    font-size: 1.1rem;
+    cursor: pointer;
+  }
+  button:hover {
+    background: #0056b3;
+  }
+  .result {
+    margin-top: 2rem;
+    font-size: 1.3rem;
+    font-weight: bold;
+  }
+  .checkbox-container {
+    margin-top: 1rem;
+    user-select: none;
+  }
+  .rate-group {
+    display: flex;
+    gap: 1rem;
+  }
+  .rate-group > div {
+    flex: 1;
+  }
+</style>
 </head>
 <body>
-  <h1>Welcome to the MMCPCC HR Pay Calculator!</h1>
-  <p>This page will soon contain the full computation system.</p>
+<div class="container">
+  <h2>Employee Pay Calculator</h2>
+
+  <div class="rate-group">
+    <div>
+      <label for="probationaryRate">Probationary Daily Rate (₱):</label>
+      <input type="number" id="probationaryRate" value="414" min="0" step="any" />
+    </div>
+    <div>
+      <label for="regularRate">Regular Daily Rate (₱):</label>
+      <input type="number" id="regularRate" value="500" min="0" step="any" />
+    </div>
+  </div>
+
+  <label for="employeeStatus">Employee Status:</label>
+  <select id="employeeStatus">
+    <option value="probationary">Probationary</option>
+    <option value="regular" selected>Regular</option>
+  </select>
+
+  <label for="hoursWorked">Hours Worked:</label>
+  <input type="number" id="hoursWorked" value="8" min="0" max="24" step="any" />
+
+  <label for="scenario">Work Scenario:</label>
+  <select id="scenario">
+    <optgroup label="Regular Work">
+      <option value="1">Regular Workday</option>
+      <option value="1.25">OT on Regular Day</option>
+      <option value="1.10">Night Diff Only (Regular Day)</option>
+    </optgroup>
+    <optgroup label="Rest Day">
+      <option value="1.30">Rest Day (Worked)</option>
+      <option value="1.69">OT on Rest Day</option>
+      <option value="1.43">Rest Day + Night Differential</option>
+      <option value="1.86">OT on Rest Day + Night Diff</option>
+    </optgroup>
+    <optgroup label="Special Holiday">
+      <option value="1.30">Special Holiday (Worked)</option>
+      <option value="1.69">OT on Special Holiday</option>
+      <option value="1.43">Special Holiday + Night Diff</option>
+      <option value="1.86">OT on Special Holiday + Night Diff</option>
+      <option value="1.50">Special Holiday + Rest Day</option>
+      <option value="1.95">OT on Special Holiday + Rest Day</option>
+    </optgroup>
+    <optgroup label="Regular Holiday">
+      <option value="2.00">Regular Holiday (Worked)</option>
+      <option value="2.60">OT on Regular Holiday</option>
+      <option value="2.20">Regular Holiday + Night Diff</option>
+      <option value="2.86">OT on Regular Holiday + Night Diff</option>
+      <option value="2.60">Regular Holiday + Rest Day</option>
+      <option value="3.38">OT on Regular Holiday + Rest Day</option>
+    </optgroup>
+  </select>
+
+  <div class="checkbox-container">
+    <input type="checkbox" id="nightDiff" />
+    <label for="nightDiff">Apply Additional Night Differential (+10%)</label>
+  </div>
+
+  <button onclick="calculatePay()">Calculate Pay</button>
+
+  <div class="result" id="result">Total Pay: ₱0.00</div>
+</div>
+
+<script>
+function calculatePay() {
+  const probationaryRate = parseFloat(document.getElementById("probationaryRate").value);
+  const regularRate = parseFloat(document.getElementById("regularRate").value);
+  const status = document.getElementById("employeeStatus").value;
+  const hoursWorked = parseFloat(document.getElementById("hoursWorked").value);
+  const scenarioMultiplier = parseFloat(document.getElementById("scenario").value);
+  const nightDiffChecked = document.getElementById("nightDiff").checked;
+
+  if ((status === "probationary" && (isNaN(probationaryRate) || probationaryRate <= 0)) ||
+      (status === "regular" && (isNaN(regularRate) || regularRate <= 0))) {
+    alert("Please enter a valid Daily Rate for the selected employee status.");
+    return;
+  }
+  if (isNaN(hoursWorked) || hoursWorked <= 0) {
+    alert("Please enter valid Hours Worked.");
+    return;
+  }
+
+  const dailyRate = status === "probationary" ? probationaryRate : regularRate;
+  const hourlyRate = dailyRate / 8;
+
+  let pay = hourlyRate * hoursWorked * scenarioMultiplier;
+
+  // Apply additional night differential if checked and scenario multiplier < 1.43 (means night diff not included)
+  if (nightDiffChecked && scenarioMultiplier < 1.43) {
+    pay *= 1.10;
+  }
+
+  document.getElementById("result").textContent = `Total Pay: ₱${pay.toFixed(2)}`;
+}
+</script>
 </body>
 </html>
